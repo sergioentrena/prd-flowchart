@@ -350,43 +350,30 @@ textarea { min-height: 280px; line-height: 1.6; }
 }
 
 /* Tab bar */
-.flow-tabs {
+.flow-chips {
   display: flex;
-  overflow-x: auto;
-  background: var(--surface-neutral-low);
+  flex-wrap: wrap;
+  gap: var(--sp-sm);
+  padding: var(--sp-md) var(--sp-xl);
   border-bottom: 1px solid var(--border-neutral-low);
-  scrollbar-width: none;
+  background: var(--surface-foreground);
   flex-shrink: 0;
 }
-.flow-tabs::-webkit-scrollbar { display: none; }
-.flow-tab {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-sm);
-  padding: 0 var(--sp-lg);
-  height: 44px;
-  font-size: var(--text-sm);
-  font-weight: 500;
+.flow-chip {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-neutral-low);
+  background: var(--surface-foreground);
   color: var(--content-subtle);
   cursor: pointer;
+  transition: all .15s;
   white-space: nowrap;
-  border-bottom: 2px solid transparent;
-  flex-shrink: 0;
-  transition: color var(--transition), border-color var(--transition), background var(--transition);
   user-select: none;
 }
-.flow-tab:hover { color: var(--content-base); background: var(--surface-neutral-xlow); }
-.flow-tab.active { color: var(--primary); border-bottom-color: var(--primary); background: var(--surface-foreground); font-weight: 600; }
-.flow-tab-num {
-  width: 18px; height: 18px;
-  background: var(--surface-neutral-xlow);
-  border-radius: var(--radius-pill);
-  font-size: 10px;
-  font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.flow-tab.active .flow-tab-num { background: var(--surface-primary-low); color: var(--primary); }
+.flow-chip:hover { border-color: var(--primary); color: var(--primary); }
+.flow-chip.active { background: var(--primary); border-color: var(--primary); color: #fff; }
 
 /* Header below tabs */
 .flow-card-header {
@@ -1168,18 +1155,17 @@ function renderFlows(flows, title) {
   const viewer = document.createElement('div');
   viewer.className = 'flow-viewer';
 
-  // Tab bar
-  const tabBar = document.createElement('div');
-  tabBar.className = 'flow-tabs';
+  // Chip row
+  const chipRow = document.createElement('div');
+  chipRow.className = 'flow-chips';
   flows.forEach((flow, idx) => {
-    const tab = document.createElement('div');
-    tab.className = 'flow-tab' + (idx === 0 ? ' active' : '');
-    tab.dataset.idx = idx;
-    tab.innerHTML = `<span class="flow-tab-num">${idx + 1}</span>${flow.title}`;
-    tab.addEventListener('click', () => selectFlow(idx));
-    tabBar.appendChild(tab);
+    const chip = document.createElement('button');
+    chip.className = 'flow-chip' + (idx === 0 ? ' active' : '');
+    chip.textContent = flow.title;
+    chip.addEventListener('click', () => selectFlow(idx));
+    chipRow.appendChild(chip);
   });
-  viewer.appendChild(tabBar);
+  viewer.appendChild(chipRow);
 
   // Header (updates on tab switch)
   viewer.insertAdjacentHTML('beforeend', `
@@ -1222,16 +1208,18 @@ function selectFlow(idx) {
   const flows = _generatedFlows;
   if (!flows[idx]) return;
 
-  // Stop previous dots
+  // Stop previous dots and clean up their DOM elements
   if (_cyInstances[_activeFlowIdx]) {
     const prev = _cyInstances[_activeFlowIdx];
     if (prev.dotRaf) { cancelAnimationFrame(prev.dotRaf); prev.dotRaf = null; }
+    prev.dotLoopId++; // invalidate any in-flight frame callbacks
+    prev.mountEl.querySelectorAll('.cy-ant-dot').forEach(d => d.remove());
   }
   _activeFlowIdx = idx;
 
-  // Update tabs
-  document.querySelectorAll('.flow-tab').forEach((t, i) => {
-    t.classList.toggle('active', i === idx);
+  // Update chips
+  document.querySelectorAll('.flow-chip').forEach((c, i) => {
+    c.classList.toggle('active', i === idx);
   });
 
   // Update header
@@ -1471,6 +1459,7 @@ function animatePath(cy, path, idx) {
   const dots = [];
   for (let i = 0; i < DOT_COUNT; i++) {
     const el = document.createElement('div');
+    el.className = 'cy-ant-dot';
     el.style.cssText = 'position:absolute;width:4px;height:4px;background:#6b7280;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);opacity:0;z-index:5;';
     container.appendChild(el);
     dots.push(el);
