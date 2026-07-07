@@ -1108,42 +1108,48 @@ Analyze this PRD and generate the user flowcharts. Return ONLY the JSON.`;
   const res = await fetch('/api/generate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      system: systemPrompt,
-      prompt: userPrompt,
-      max_tokens: 16000
-    })
+    body: JSON.stringify({ system: systemPrompt, prompt: userPrompt, max_tokens: 16000 })
   });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err?.error || `HTTP ${res.status}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+  // Consume SSE stream and reassemble full text
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buf = '', text = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+    const lines = buf.split('\n');
+    buf = lines.pop(); // keep incomplete last line
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const payload = line.slice(6).trim();
+      if (payload === '[DONE]') break;
+      const msg = JSON.parse(payload);
+      if (msg.error) throw new Error(msg.error);
+      if (msg.t) text += msg.t;
+    }
   }
 
-  const data = await res.json();
-  const text = data.text.trim();
-
+  text = text.trim();
   // Strip accidental markdown fences
   const clean = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
 
-  // Try clean parse first; if truncated, recover completed flows from the partial JSON
+  // Try clean parse first; if truncated, recover completed flows from partial JSON
   try {
     return JSON.parse(clean);
   } catch(e) {
-    // Find the last complete flow object (ends with }) inside the flows array
     const lastClose = clean.lastIndexOf('}');
     if (lastClose === -1) throw e;
-    // Walk back from lastClose to find matching { at the flow level
-    // Build minimal valid JSON by closing the array and wrapper object
     const partial = clean.slice(0, lastClose + 1);
-    // Find where "flows": [ starts and slice to include only complete items
-    const repaired = partial.replace(/,?\s*\{[^{}]*$/, '') // drop any incomplete trailing object
-      + '\n  ]\n}';
+    const repaired = partial.replace(/,?\s*\{[^{}]*$/, '') + '\n  ]\n}';
     try {
       const parsed = JSON.parse(repaired);
       if (parsed.flows && parsed.flows.length > 0) return parsed;
     } catch(e2) { /* fall through */ }
-    throw new Error('Response was truncated and could not be recovered. Try reducing max flows or choosing a shorter depth.');
+    throw new Error('Response was truncated. Try fewer flows or a shorter depth.');
   }
 }
 
