@@ -1111,7 +1111,7 @@ Analyze this PRD and generate the user flowcharts. Return ONLY the JSON.`;
     body: JSON.stringify({
       system: systemPrompt,
       prompt: userPrompt,
-      max_tokens: 8000
+      max_tokens: 16000
     })
   });
 
@@ -1125,7 +1125,26 @@ Analyze this PRD and generate the user flowcharts. Return ONLY the JSON.`;
 
   // Strip accidental markdown fences
   const clean = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
-  return JSON.parse(clean);
+
+  // Try clean parse first; if truncated, recover completed flows from the partial JSON
+  try {
+    return JSON.parse(clean);
+  } catch(e) {
+    // Find the last complete flow object (ends with }) inside the flows array
+    const lastClose = clean.lastIndexOf('}');
+    if (lastClose === -1) throw e;
+    // Walk back from lastClose to find matching { at the flow level
+    // Build minimal valid JSON by closing the array and wrapper object
+    const partial = clean.slice(0, lastClose + 1);
+    // Find where "flows": [ starts and slice to include only complete items
+    const repaired = partial.replace(/,?\s*\{[^{}]*$/, '') // drop any incomplete trailing object
+      + '\n  ]\n}';
+    try {
+      const parsed = JSON.parse(repaired);
+      if (parsed.flows && parsed.flows.length > 0) return parsed;
+    } catch(e2) { /* fall through */ }
+    throw new Error('Response was truncated and could not be recovered. Try reducing max flows or choosing a shorter depth.');
+  }
 }
 
 // ── RENDER FLOWS ──────────────────────────────────────────────────────────────

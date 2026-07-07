@@ -13,7 +13,7 @@ const bedrock = new BedrockRuntimeClient({ region: REGION });
 
 // Streaming endpoint — keeps connection alive while Bedrock generates
 app.post('/api/generate', async (req, res) => {
-  const { system, prompt, max_tokens = 8000 } = req.body;
+  const { system, prompt, max_tokens = 16000 } = req.body;
   if (!prompt) return res.status(400).json({ error: 'Missing prompt' });
 
   try {
