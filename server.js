@@ -12,20 +12,37 @@ const REGION = process.env.AWS_REGION || 'us-east-1';
 const bedrock = new BedrockRuntimeClient({ region: REGION });
 const bedrockMgmt = new BedrockClient({ region: REGION });
 
-// Debug: list available models
+// Debug: probe which model IDs actually work
 app.get('/api/models', async (req, res) => {
-  try {
-    const cmd = new ListFoundationModelsCommand({ byProvider: 'Anthropic' });
-    const data = await bedrockMgmt.send(cmd);
-    const models = data.modelSummaries.map(m => ({
-      id: m.modelId,
-      name: m.modelName,
-      status: m.modelLifecycle?.status
-    }));
-    res.json(models);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  const candidates = [
+    'us.anthropic.claude-opus-4-5-20251101-v1:0',
+    'us.anthropic.claude-sonnet-4-5-20251101-v1:0',
+    'us.anthropic.claude-haiku-4-5-20251101-v1:0',
+    'us.anthropic.claude-3-5-haiku-20241022-v1:0',
+    'us.anthropic.claude-3-5-sonnet-20241022-v2:0',
+    'us.anthropic.claude-3-7-sonnet-20250219-v1:0',
+    'anthropic.claude-3-5-haiku-20241022-v1:0',
+    'anthropic.claude-3-5-sonnet-20241022-v2:0',
+    'anthropic.claude-3-7-sonnet-20250219-v1:0',
+    'anthropic.claude-opus-4-5:0',
+    'anthropic.claude-sonnet-4-5:0',
+  ];
+  const minPayload = JSON.stringify({
+    anthropic_version: 'bedrock-2023-05-31',
+    max_tokens: 1,
+    messages: [{ role: 'user', content: 'hi' }]
+  });
+  const results = await Promise.all(candidates.map(async id => {
+    try {
+      await bedrock.send(new InvokeModelCommand({
+        modelId: id, contentType: 'application/json', accept: 'application/json', body: minPayload
+      }));
+      return { id, status: 'OK' };
+    } catch (e) {
+      return { id, status: e.message.slice(0, 80) };
+    }
+  }));
+  res.json(results);
 });
 
 app.post('/api/generate', async (req, res) => {
