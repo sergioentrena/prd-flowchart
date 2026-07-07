@@ -339,33 +339,64 @@ textarea { min-height: 280px; line-height: 1.6; }
 .flows-empty-title { font-size: var(--text-lg); font-weight: 600; color: var(--content-base); }
 .flows-empty-subtitle { font-size: var(--text-md); max-width: 360px; }
 
-.flow-card {
+/* ── FLOW VIEWER (single card with tabs) ── */
+.flow-viewer {
   background: var(--surface-foreground);
   border: 1px solid var(--border-neutral-low);
   border-radius: var(--radius-md);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
+
+/* Tab bar */
+.flow-tabs {
+  display: flex;
+  overflow-x: auto;
+  background: var(--surface-neutral-low);
+  border-bottom: 1px solid var(--border-neutral-low);
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+.flow-tabs::-webkit-scrollbar { display: none; }
+.flow-tab {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: 0 var(--sp-lg);
+  height: 44px;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--content-subtle);
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  flex-shrink: 0;
+  transition: color var(--transition), border-color var(--transition), background var(--transition);
+  user-select: none;
+}
+.flow-tab:hover { color: var(--content-base); background: var(--surface-neutral-xlow); }
+.flow-tab.active { color: var(--primary); border-bottom-color: var(--primary); background: var(--surface-foreground); font-weight: 600; }
+.flow-tab-num {
+  width: 18px; height: 18px;
+  background: var(--surface-neutral-xlow);
+  border-radius: var(--radius-pill);
+  font-size: 10px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.flow-tab.active .flow-tab-num { background: var(--surface-primary-low); color: var(--primary); }
+
+/* Header below tabs */
 .flow-card-header {
   display: flex;
   align-items: flex-start;
   gap: var(--sp-md);
-  padding: var(--sp-lg) var(--sp-xl);
+  padding: var(--sp-md) var(--sp-xl);
   border-bottom: 1px solid var(--border-neutral-low);
 }
 .flow-card-meta { flex: 1; min-width: 0; }
-.flow-card-index {
-  width: 24px; height: 24px;
-  background: var(--surface-primary-low);
-  color: var(--primary);
-  border-radius: var(--radius-pill);
-  font-size: var(--text-xs);
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
 .flow-card-title { font-size: var(--text-lg); font-weight: 700; color: var(--content-base); }
 .flow-card-desc { font-size: var(--text-sm); color: var(--content-subtle); margin-top: 2px; }
 .flow-card-actors {
@@ -389,7 +420,7 @@ textarea { min-height: 280px; line-height: 1.6; }
 
 .cy-container {
   width: 100%;
-  height: 440px;
+  height: 480px;
   background: #fafbfc;
   border-radius: 0;
   position: relative;
@@ -674,7 +705,7 @@ textarea { min-height: 280px; line-height: 1.6; }
 <script>
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let _generatedFlows = [];
-let _cyInstances = []; // {cy, dotRaf, dotLoopId}
+let _cyInstances = []; // {cy, mountEl, path, dotRaf, dotLoopId}
 
 // ── PANEL SWITCH ──────────────────────────────────────────────────────────────
 function switchPanel(name, btn) {
@@ -1123,63 +1154,124 @@ const NODE_COLORS = {
   default:  { bg:'#ffffff', border:'#9ca3af', text:'#1a222b'  }, // white — fallback
 };
 
+let _activeFlowIdx = 0;
+
 function renderFlows(flows, title) {
   const list = document.getElementById('flows-list');
   const empty = document.getElementById('flows-empty');
   list.innerHTML = '';
   _cyInstances.forEach(inst => { try { if (inst.dotRaf) cancelAnimationFrame(inst.dotRaf); inst.cy.destroy(); } catch(e){} });
   _cyInstances = [];
+  _activeFlowIdx = 0;
 
+  // Build single viewer card
+  const viewer = document.createElement('div');
+  viewer.className = 'flow-viewer';
+
+  // Tab bar
+  const tabBar = document.createElement('div');
+  tabBar.className = 'flow-tabs';
   flows.forEach((flow, idx) => {
-    const card = document.createElement('div');
-    card.className = 'flow-card';
-    card.id = 'flow-card-' + idx;
-
-    // Header
-    const actorsHtml = (flow.actors || []).map(a =>
-      `<span class="actor-chip"><i class="ph ph-user"></i>${a}</span>`
-    ).join('');
-
-    card.innerHTML = `
-      <div class="flow-card-header">
-        <div class="flow-card-index">${idx + 1}</div>
-        <div class="flow-card-meta">
-          <div class="flow-card-title">${flow.title}</div>
-          <div class="flow-card-desc">${flow.description || ''}</div>
-          ${actorsHtml ? `<div class="flow-card-actors">${actorsHtml}</div>` : ''}
-        </div>
-      </div>
-      <div class="cy-container" id="cy-${idx}" style="position:relative;"></div>
-      <div class="legend-row">
-        <span class="legend-item"><span class="legend-dot" style="background:#E07B26;border-radius:50%;border:1.5px solid #b85e18;"></span>Actor</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#c4b5fd;transform:rotate(45deg);border:1.5px solid #7c3aed;"></span>Decision</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#86efac;border:1.5px solid #16a34a;"></span>Success</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#fca5a5;border:1.5px solid #dc2626;"></span>Error</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#fde68a;border:1.5px solid #d97706;"></span>System</span>
-        <span class="legend-item"><span class="legend-dot" style="background:#fff;border:1.5px solid #9ca3af;"></span>Action</span>
-      </div>
-      <div class="flow-desc-bar" id="flow-desc-${idx}">
-        <i class="ph ph-info"></i>
-        <span>Hover a node to see details.</span>
-      </div>
-    `;
-
-    list.appendChild(card);
-    _generatedFlows.push(flow);
-
-    // Init Cytoscape after DOM paint
-    requestAnimationFrame(() => initFlowCy(flow, idx));
+    const tab = document.createElement('div');
+    tab.className = 'flow-tab' + (idx === 0 ? ' active' : '');
+    tab.dataset.idx = idx;
+    tab.innerHTML = `<span class="flow-tab-num">${idx + 1}</span>${flow.title}`;
+    tab.addEventListener('click', () => selectFlow(idx));
+    tabBar.appendChild(tab);
   });
+  viewer.appendChild(tabBar);
+
+  // Header (updates on tab switch)
+  viewer.insertAdjacentHTML('beforeend', `
+    <div class="flow-card-header" id="flow-header">
+      <div class="flow-card-meta">
+        <div class="flow-card-title" id="flow-title">${flows[0].title}</div>
+        <div class="flow-card-desc" id="flow-subdesc">${flows[0].description || ''}</div>
+        <div class="flow-card-actors" id="flow-actors"></div>
+      </div>
+    </div>
+    <div class="cy-container" id="cy-0" style="position:relative;"></div>
+    <div class="legend-row">
+      <span class="legend-item"><span class="legend-dot" style="background:#E07B26;border-radius:50%;border:1.5px solid #b85e18;"></span>Actor</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#c4b5fd;transform:rotate(45deg);border:1.5px solid #7c3aed;"></span>Decision</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#86efac;border:1.5px solid #16a34a;"></span>Success</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#fca5a5;border:1.5px solid #dc2626;"></span>Error</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#fde68a;border:1.5px solid #d97706;"></span>System</span>
+      <span class="legend-item"><span class="legend-dot" style="background:#fff;border:1.5px solid #9ca3af;"></span>Action</span>
+    </div>
+    <div class="flow-desc-bar" id="flow-desc-0">
+      <i class="ph ph-info"></i>
+      <span>Hover a node to see details.</span>
+    </div>
+  `);
+
+  list.appendChild(viewer);
+  flows.forEach(f => _generatedFlows.push(f));
 
   empty.style.display = 'none';
-  list.style.display = 'flex';
-  list.style.flexDirection = 'column';
-  list.style.gap = 'var(--sp-lg)';
+  list.style.display = 'block';
+
+  // Init all flows but only show the first
+  requestAnimationFrame(() => {
+    flows.forEach((flow, idx) => initFlowCy(flow, idx));
+    selectFlow(0);
+  });
+}
+
+function selectFlow(idx) {
+  const flows = _generatedFlows;
+  if (!flows[idx]) return;
+
+  // Stop previous dots
+  if (_cyInstances[_activeFlowIdx]) {
+    const prev = _cyInstances[_activeFlowIdx];
+    if (prev.dotRaf) { cancelAnimationFrame(prev.dotRaf); prev.dotRaf = null; }
+  }
+  _activeFlowIdx = idx;
+
+  // Update tabs
+  document.querySelectorAll('.flow-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === idx);
+  });
+
+  // Update header
+  const flow = flows[idx];
+  document.getElementById('flow-title').textContent = flow.title;
+  document.getElementById('flow-subdesc').textContent = flow.description || '';
+  const actorsEl = document.getElementById('flow-actors');
+  actorsEl.innerHTML = (flow.actors || []).map(a =>
+    `<span class="actor-chip"><i class="ph ph-user"></i>${a}</span>`
+  ).join('');
+  actorsEl.style.display = flow.actors?.length ? 'flex' : 'none';
+
+  // Swap cy container contents
+  const container = document.getElementById('cy-0');
+  if (!container) return;
+
+  // Detach all cy containers, reattach the active one
+  const inst = _cyInstances[idx];
+  if (!inst) return;
+
+  // Move the cy canvas into the visible container
+  container.innerHTML = '';
+  container.appendChild(inst.mountEl);
+
+  // Reset desc bar
+  document.getElementById('flow-desc-0').querySelector('span').textContent = 'Hover a node to see details.';
+
+  // Restart dots
+  inst.cy.resize();
+  inst.cy.fit(undefined, 32);
+  if (inst.path?.length > 0) {
+    inst.dotLoopId++;
+    animatePath(inst.cy, inst.path, idx);
+  }
 }
 
 function initFlowCy(flow, idx) {
-  const container = document.getElementById('cy-' + idx);
-  if (!container) return;
+  // Each flow gets its own offscreen mount element; we swap it into cy-0 on tab select
+  const mountEl = document.createElement('div');
+  mountEl.style.cssText = 'width:100%;height:100%;';
 
   const nodes = (flow.nodes || []).map(n => {
     const c = NODE_COLORS[n.type] || NODE_COLORS.default;
@@ -1191,7 +1283,7 @@ function initFlowCy(flow, idx) {
   }));
 
   const cy = cytoscape({
-    container,
+    container: mountEl,
     elements: { nodes, edges },
     layout: {
       name: 'dagre',
@@ -1250,87 +1342,63 @@ function initFlowCy(flow, idx) {
     boxSelectionEnabled: false,
   });
 
-  // ── Tooltip — exact replica of factiva-spaces tooltip behaviour ──────────────
+  // ── Tooltip ──────────────────────────────────────────────────────────────────
   const tip = document.createElement('div');
   tip.style.cssText = [
-    'position:absolute',
-    'pointer-events:none',
-    'z-index:100',
-    'background:#111827',
-    'border:none',
-    'border-radius:6px',
-    'padding:6px 10px',
-    'font-size:12px',
-    'font-family:Inter,sans-serif',
-    'font-weight:500',
-    'color:#f9fafb',
-    'line-height:1.4',
-    'box-shadow:0 4px 12px rgba(0,0,0,.25)',
-    'max-width:280px',
-    'white-space:pre-wrap',
-    'opacity:0',
-    'transition:opacity .12s',
+    'position:absolute','pointer-events:none','z-index:100',
+    'background:#111827','border:none','border-radius:6px',
+    'padding:6px 10px','font-size:12px','font-family:Inter,sans-serif',
+    'font-weight:500','color:#f9fafb','line-height:1.4',
+    'box-shadow:0 4px 12px rgba(0,0,0,.25)','max-width:280px',
+    'white-space:pre-wrap','opacity:0','transition:opacity .12s',
   ].join(';');
-  container.appendChild(tip);
+  mountEl.appendChild(tip);
 
   function showTip(text, renderedPos) {
     if (!text) return;
     const parts = text.split('\n');
-    const title = parts[0];
-    const desc  = parts.slice(1).join('\n');
-    if (desc) {
-      tip.innerHTML = `<strong style="display:block;margin-bottom:4px;font-size:12px;">${title}</strong><span style="font-size:11px;opacity:.85;font-weight:400;">${desc}</span>`;
-    } else {
-      tip.innerHTML = `<strong style="font-size:12px;">${title}</strong>`;
-    }
+    const ttl = parts[0], desc = parts.slice(1).join('\n');
+    tip.innerHTML = desc
+      ? `<strong style="display:block;margin-bottom:4px;font-size:12px;">${ttl}</strong><span style="font-size:11px;opacity:.85;font-weight:400;">${desc}</span>`
+      : `<strong style="font-size:12px;">${ttl}</strong>`;
     tip.style.opacity = '1';
-    const cw = container.offsetWidth, ch = container.offsetHeight;
-    const tw = tip.offsetWidth || 160, th = tip.offsetHeight || 40;
-    let x = renderedPos.x + 12;
-    let y = renderedPos.y - th - 10;
+    const el = mountEl;
+    const cw = el.offsetWidth, tw = tip.offsetWidth || 160, th = tip.offsetHeight || 40;
+    let x = renderedPos.x + 12, y = renderedPos.y - th - 10;
     if (x + tw > cw - 4) x = renderedPos.x - tw - 12;
     if (y < 4) y = renderedPos.y + 18;
-    tip.style.left = x + 'px';
-    tip.style.top  = y + 'px';
-    // Update desc bar
-    const descBar = document.getElementById('flow-desc-' + idx);
-    if (descBar) descBar.querySelector('span').textContent = title + (desc ? ' — ' + desc : '');
+    tip.style.left = x + 'px'; tip.style.top = y + 'px';
+    const descBar = document.getElementById('flow-desc-0');
+    if (descBar && idx === _activeFlowIdx) descBar.querySelector('span').textContent = ttl + (desc ? ' — ' + desc : '');
   }
   function hideTip() { tip.style.opacity = '0'; }
 
-  cy.on('mouseover', 'node', function(e) {
+  cy.on('mouseover', 'node', e => {
     if (!e.target.hasClass('flow-active')) return;
-    const lbl   = e.target.data('label').replace(/\n/g,' ');
+    const lbl = e.target.data('label').replace(/\n/g,' ');
     const tipTxt = e.target.data('tip') || '';
     showTip(lbl + (tipTxt && tipTxt !== lbl ? '\n' + tipTxt : ''), e.target.renderedPosition());
   });
-  cy.on('mouseover', 'edge', function(e) {
+  cy.on('mouseover', 'edge', e => {
     if (!e.target.hasClass('flow-active')) return;
-    const lbl = e.target.data('label');
-    if (!lbl) return;
+    const lbl = e.target.data('label'); if (!lbl) return;
     const mp = e.target.renderedMidpoint ? e.target.renderedMidpoint() : e.renderedPosition;
     showTip(lbl, mp);
   });
-  cy.on('mouseout', 'node edge', hideTip);
-  cy.on('mousedown', 'node edge', hideTip);
-  container.addEventListener('mouseleave', hideTip);
-  container.addEventListener('mousemove', function(e) {
-    if (!cy) return;
-    const rect = container.getBoundingClientRect();
-    const rp = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-    const els = cy.elementsAt(rp);
-    if (!els || els.length === 0) hideTip();
+  cy.on('mouseout mousedown', 'node edge', hideTip);
+  mountEl.addEventListener('mouseleave', hideTip);
+  mountEl.addEventListener('mousemove', e => {
+    const rect = mountEl.getBoundingClientRect();
+    if (!cy.elementsAt({ x: e.clientX - rect.left, y: e.clientY - rect.top })?.length) hideTip();
   });
 
-  // Animate primary path
   const path = flow.path || [];
-  if (path.length > 0) animatePath(cy, path, idx);
-
-  _cyInstances.push({ cy, dotRaf: null, dotLoopId: 0 });
+  _cyInstances.push({ cy, mountEl, path, dotRaf: null, dotLoopId: 0 });
 }
 
 function animatePath(cy, path, idx) {
-  const inst = _cyInstances[_cyInstances.length - 1]; // last pushed
+  const inst = _cyInstances[idx];
+  if (!inst) return;
 
   cy.elements().addClass('flow-dim');
   path.forEach((nid, i) => {
@@ -1340,7 +1408,7 @@ function animatePath(cy, path, idx) {
     }
   });
 
-  const container = document.getElementById('cy-' + idx);
+  const container = inst.mountEl;
   if (!container) return;
   if (getComputedStyle(container).position === 'static') container.style.position = 'relative';
 
@@ -1409,7 +1477,7 @@ function animatePath(cy, path, idx) {
   }
 
   let cursor = 0, lastNow = null;
-  const loopId = ++_cyInstances[_cyInstances.length-1].dotLoopId;
+  const loopId = ++_cyInstances[idx].dotLoopId;
 
   function frame(now) {
     if (_cyInstances[idx] && loopId !== _cyInstances[idx].dotLoopId) {
