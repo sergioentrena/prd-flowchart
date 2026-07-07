@@ -1,0 +1,13 @@
+{
+  "name": "prd-flowchart",
+  "version": "1.0.0",
+  "description": "PRD → Flowchart generator — DJ Platform theme",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "@aws-sdk/client-bedrock-runtime": "^3.600.0"
+  }
+}

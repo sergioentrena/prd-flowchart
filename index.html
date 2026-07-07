@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRD Flowchart Generator — DJ Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --content-base:          #1a222b;
+  --content-subtle:        #778694;
+  --content-inverse:       #ffffff;
+  --surface-foreground:    #ffffff;
+  --surface-neutral-low:   #f0f5f7;
+  --surface-neutral-xlow:  #e8ebed;
+  --surface-primary-low:   #e7f0fe;
+  --surface-shell:         #0e1620;
+  --surface-shell-hover:   #1a2533;
+  --border-neutral-low:    #dadee1;
+  --border-neutral-med:    #c2c8ce;
+  --primary:               #0a59db;
+  --primary-hover:         #0847b8;
+  --primary-content:       #ffffff;
+  --danger:                #e21313;
+  --danger-low:            #fbe0e0;
+  --success:               #14ac23;
+  --success-low:           #e4f6e6;
+  --radius-xs:   4px;
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-pill: 999px;
+  --sp-xs:  4px;
+  --sp-sm:  8px;
+  --sp-md:  12px;
+  --sp-lg:  16px;
+  --sp-xl:  24px;
+  --sp-xxl: 32px;
+  --topbar-h: 56px;
+  --sidebar-w: 260px;
+  --shadow-sm: 0 1px 3px rgba(15,23,32,.08), 0 1px 2px rgba(15,23,32,.04);
+  --shadow-md: 0 4px 12px rgba(15,23,32,.10), 0 2px 4px rgba(15,23,32,.05);
+  --transition: 150ms ease;
+  --text-xs:  11px;
+  --text-sm:  12px;
+  --text-md:  14px;
+  --text-lg:  16px;
+  --text-xl:  20px;
+}
+
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--surface-neutral-low);
+  color: var(--content-base);
+  font-size: var(--text-md);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  height: var(--topbar-h);
+  background: var(--surface-shell);
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sp-xl);
+  gap: var(--sp-lg);
+  flex-shrink: 0;
+  z-index: 100;
+}
+.topbar-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--content-inverse);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.topbar-logo-badge {
+  background: var(--primary);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.topbar-divider { width: 1px; height: 20px; background: rgba(255,255,255,.12); flex-shrink: 0; }
+.topbar-title { font-size: var(--text-md); font-weight: 600; color: rgba(255,255,255,.8); }
+.topbar-spacer { flex: 1; }
+.topbar-actions { display: flex; align-items: center; gap: var(--sp-sm); }
+
+/* ── LAYOUT ── */
+.app-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--surface-shell);
+  border-right: 1px solid rgba(255,255,255,.07);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.sidebar-section {
+  padding: var(--sp-xl) var(--sp-lg) var(--sp-md);
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.sidebar-section-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: rgba(255,255,255,.35);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: var(--sp-sm);
+}
+.sidebar-nav {
+  padding: var(--sp-md) var(--sp-sm);
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: var(--sp-xs) var(--sp-sm);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-md);
+  font-weight: 500;
+  color: rgba(255,255,255,.6);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+  border: none;
+  background: none;
+  text-align: left;
+  width: 100%;
+}
+.nav-item:hover { background: var(--surface-shell-hover); color: rgba(255,255,255,.9); }
+.nav-item.active { background: rgba(10,89,219,.25); color: #fff; font-weight: 600; }
+.nav-item i { font-size: 16px; flex-shrink: 0; opacity: .8; }
+.nav-item .nav-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nav-item .nav-badge {
+  background: rgba(255,255,255,.12);
+  color: rgba(255,255,255,.6);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+}
+.nav-item.active .nav-badge { background: var(--primary); color: #fff; }
+
+/* ── MAIN ── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── PANELS ── */
+.panel { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+.panel.active { display: flex; }
+
+/* ── INPUT PANEL ── */
+.input-panel {
+  padding: var(--sp-xl);
+  overflow-y: auto;
+  flex: 1;
+}
+.input-panel-inner {
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xl);
+}
+.section-card {
+  background: var(--surface-foreground);
+  border: 1px solid var(--border-neutral-low);
+  border-radius: var(--radius-md);
+  padding: var(--sp-xl);
+}
+.section-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  margin-bottom: var(--sp-lg);
+}
+.section-card-title {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--content-base);
+}
+.section-card-subtitle {
+  font-size: var(--text-sm);
+  color: var(--content-subtle);
+  margin-top: 2px;
+}
+.field { display: flex; flex-direction: column; gap: var(--sp-xs); }
+.field-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--content-base);
+}
+.field-hint { font-size: var(--text-xs); color: var(--content-subtle); }
+
+input[type="text"], textarea {
+  font-family: 'Inter', sans-serif;
+  font-size: var(--text-md);
+  color: var(--content-base);
+  background: var(--surface-foreground);
+  border: 1px solid var(--border-neutral-med);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-sm) var(--sp-md);
+  width: 100%;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  outline: none;
+  resize: vertical;
+}
+input[type="text"]:focus, textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(10,89,219,.12);
+}
+textarea { min-height: 280px; line-height: 1.6; }
+
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-lg); }
+
+/* ── BUTTON ── */
+.btn {
+  display: inline-flex; align-items: center; gap: var(--sp-xs);
+  padding: var(--sp-sm) var(--sp-md);
+  border-radius: var(--radius-sm);
+  font-family: 'Inter', sans-serif;
+  font-size: var(--text-md);
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background var(--transition), border-color var(--transition), box-shadow var(--transition);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn i { font-size: 16px; }
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+.btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+.btn-primary:disabled { opacity: .55; cursor: not-allowed; }
+.btn-ghost {
+  background: transparent;
+  color: var(--content-subtle);
+  border-color: var(--border-neutral-med);
+}
+.btn-ghost:hover { background: var(--surface-neutral-low); color: var(--content-base); }
+.btn-sm { padding: 5px 10px; font-size: var(--text-sm); }
+.btn-lg { padding: 10px 20px; font-size: var(--text-md); }
+
+/* ── GENERATE BAR ── */
+.generate-bar {
+  background: var(--surface-foreground);
+  border-top: 1px solid var(--border-neutral-low);
+  padding: var(--sp-md) var(--sp-xl);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
+  flex-shrink: 0;
+}
+.generate-bar-hint { font-size: var(--text-sm); color: var(--content-subtle); flex: 1; }
+
+/* ── STATUS ── */
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: var(--sp-md) var(--sp-xl);
+  background: var(--surface-primary-low);
+  border-bottom: 1px solid var(--border-neutral-low);
+  font-size: var(--text-sm);
+  color: var(--primary);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.status-bar.hidden { display: none; }
+.status-bar.error { background: var(--danger-low); color: var(--danger); }
+.status-bar i { font-size: 16px; flex-shrink: 0; }
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(10,89,219,.2);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  flex-shrink: 0;
+}
+.spinner.error { border-color: rgba(226,19,19,.2); border-top-color: var(--danger); }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── FLOWCHART PANEL ── */
+.flows-panel {
+  padding: var(--sp-xl);
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-lg);
+}
+.flows-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-lg);
+  color: var(--content-subtle);
+  text-align: center;
+  padding: var(--sp-xxl);
+}
+.flows-empty i { font-size: 48px; opacity: .3; }
+.flows-empty-title { font-size: var(--text-lg); font-weight: 600; color: var(--content-base); }
+.flows-empty-subtitle { font-size: var(--text-md); max-width: 360px; }
+
+.flow-card {
+  background: var(--surface-foreground);
+  border: 1px solid var(--border-neutral-low);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.flow-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-md);
+  padding: var(--sp-lg) var(--sp-xl);
+  border-bottom: 1px solid var(--border-neutral-low);
+}
+.flow-card-meta { flex: 1; min-width: 0; }
+.flow-card-index {
+  width: 24px; height: 24px;
+  background: var(--surface-primary-low);
+  color: var(--primary);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.flow-card-title { font-size: var(--text-lg); font-weight: 700; color: var(--content-base); }
+.flow-card-desc { font-size: var(--text-sm); color: var(--content-subtle); margin-top: 2px; }
+.flow-card-actors {
+  display: flex;
+  gap: var(--sp-xs);
+  flex-wrap: wrap;
+  margin-top: var(--sp-sm);
+}
+.actor-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface-neutral-xlow);
+  color: var(--content-base);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+}
+.actor-chip i { font-size: 12px; color: var(--content-subtle); }
+
+.cy-container {
+  width: 100%;
+  height: 440px;
+  background: #fafbfc;
+  border-radius: 0;
+  position: relative;
+}
+.flow-desc-bar {
+  padding: var(--sp-md) var(--sp-xl);
+  font-size: var(--text-sm);
+  color: var(--content-subtle);
+  border-top: 1px solid var(--border-neutral-low);
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+}
+.flow-desc-bar i { font-size: 14px; color: var(--primary); flex-shrink: 0; }
+
+/* ── LEGEND ── */
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-lg);
+  flex-wrap: wrap;
+  padding: var(--sp-sm) var(--sp-xl) var(--sp-lg);
+  font-size: var(--text-xs);
+  color: var(--content-subtle);
+}
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+/* ── SUMMARY PANEL ── */
+.summary-panel {
+  padding: var(--sp-xl);
+  overflow-y: auto;
+  flex: 1;
+}
+.summary-panel-inner { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--sp-lg); }
+.summary-empty {
+  text-align: center;
+  padding: var(--sp-xxl);
+  color: var(--content-subtle);
+}
+.summary-section { background: var(--surface-foreground); border: 1px solid var(--border-neutral-low); border-radius: var(--radius-md); padding: var(--sp-xl); }
+.summary-section-title { font-size: var(--text-md); font-weight: 700; color: var(--content-base); margin-bottom: var(--sp-md); display: flex; align-items: center; gap: var(--sp-sm); }
+.summary-section-title i { color: var(--primary); }
+.summary-list { display: flex; flex-direction: column; gap: var(--sp-sm); }
+.summary-item { display: flex; gap: var(--sp-sm); font-size: var(--text-sm); }
+.summary-item-bullet { width: 6px; height: 6px; border-radius: 50%; background: var(--primary); flex-shrink: 0; margin-top: 6px; }
+.summary-tag-row { display: flex; flex-wrap: wrap; gap: var(--sp-xs); margin-top: var(--sp-sm); }
+.tag {
+  display: inline-flex; align-items: center;
+  background: var(--surface-neutral-xlow);
+  color: var(--content-base);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+}
+
+/* ── API KEY MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.4);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+.modal-overlay.hidden { display: none; }
+.modal {
+  background: var(--surface-foreground);
+  border-radius: var(--radius-md);
+  padding: var(--sp-xl);
+  width: 440px;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-lg);
+}
+.modal-title { font-size: var(--text-xl); font-weight: 700; }
+.modal-subtitle { font-size: var(--text-sm); color: var(--content-subtle); margin-top: 2px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: var(--sp-sm); }
+
+/* ── PRD EXAMPLES ── */
+.examples-row {
+  display: flex;
+  gap: var(--sp-sm);
+  flex-wrap: wrap;
+  margin-top: var(--sp-xs);
+}
+.example-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface-primary-low);
+  color: var(--primary);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: border-color var(--transition);
+}
+.example-chip:hover { border-color: var(--primary); }
+
+/* ── CHAR COUNTER ── */
+.char-counter { font-size: var(--text-xs); color: var(--content-subtle); text-align: right; margin-top: 4px; }
+
+/* ── TOOLTIP ── */
+#cy-tooltip {
+  position: absolute;
+  pointer-events: none;
+  z-index: 100;
+  background: #111827;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  color: #f9fafb;
+  line-height: 1.4;
+  box-shadow: 0 4px 12px rgba(0,0,0,.25);
+  max-width: 260px;
+  white-space: pre-wrap;
+  opacity: 0;
+  transition: opacity .12s;
+}
+</style>
+</head>
+<body>
+
+<!-- ── TOPBAR ── -->
+<header class="topbar">
+  <div class="topbar-logo">
+    <i class="ph ph-flow-arrow"></i>
+    PRD Flows
+    <span class="topbar-logo-badge">Beta</span>
+  </div>
+  <div class="topbar-divider"></div>
+  <span class="topbar-title">AI-powered user flow generator</span>
+  <div class="topbar-spacer"></div>
+  <div class="topbar-actions"></div>
+</header>
+
+<!-- ── BODY ── -->
+<div class="app-body">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Workspace</div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav">
+      <button class="nav-item active" data-panel="input" onclick="switchPanel('input', this)">
+        <i class="ph ph-file-text"></i>
+        <span class="nav-label">PRD Input</span>
+      </button>
+      <button class="nav-item" data-panel="flows" onclick="switchPanel('flows', this)">
+        <i class="ph ph-flow-arrow"></i>
+        <span class="nav-label">Flowcharts</span>
+        <span class="nav-badge" id="flow-count-badge">0</span>
+      </button>
+      <button class="nav-item" data-panel="summary" onclick="switchPanel('summary', this)">
+        <i class="ph ph-list-bullets"></i>
+        <span class="nav-label">PRD Summary</span>
+      </button>
+    </nav>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main class="main">
+
+    <!-- STATUS BAR -->
+    <div class="status-bar hidden" id="status-bar">
+      <div class="spinner" id="status-spinner"></div>
+      <span id="status-text"></span>
+    </div>
+
+    <!-- ── INPUT PANEL ── -->
+    <div class="panel active" id="panel-input">
+      <div class="input-panel">
+        <div class="input-panel-inner">
+
+          <div class="section-card">
+            <div class="section-card-header">
+              <div>
+                <div class="section-card-title">Paste your PRD</div>
+                <div class="section-card-subtitle">Claude will analyze it and generate user flowcharts for every key user journey it identifies.</div>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:var(--sp-lg);">
+              <div class="field">
+                <label class="field-label" for="prd-title">Product / Feature title <span style="color:var(--content-subtle);font-weight:400;">(optional)</span></label>
+                <input type="text" id="prd-title" placeholder="e.g. Factiva Convergence – Workspaces v0.1">
+              </div>
+
+              <div class="field">
+                <label class="field-label" for="prd-text">PRD content</label>
+                <div class="examples-row">
+                  <span style="font-size:var(--text-xs);color:var(--content-subtle);align-self:center;">Try an example:</span>
+                  <button class="example-chip" onclick="loadExample('newsstand')"><i class="ph ph-newspaper"></i> Newsstand Migration</button>
+                  <button class="example-chip" onclick="loadExample('collections')"><i class="ph ph-bookmark-simple"></i> Collections</button>
+                  <button class="example-chip" onclick="loadExample('alerts')"><i class="ph ph-bell"></i> Alerts</button>
+                  <button class="example-chip" onclick="loadExample('onboarding')"><i class="ph ph-user-plus"></i> Onboarding</button>
+                </div>
+                <textarea id="prd-text" placeholder="Paste the full PRD text here — requirements, user stories, acceptance criteria, edge cases…"></textarea>
+                <div class="char-counter"><span id="char-count">0</span> characters</div>
+              </div>
+
+              <div class="field-row">
+                <div class="field">
+                  <label class="field-label" for="flow-depth">Flow detail level</label>
+                  <select id="flow-depth" style="font-family:'Inter',sans-serif;font-size:var(--text-md);color:var(--content-base);background:var(--surface-foreground);border:1px solid var(--border-neutral-med);border-radius:var(--radius-sm);padding:var(--sp-sm) var(--sp-md);width:100%;outline:none;">
+                    <option value="concise">Concise — key paths only</option>
+                    <option value="detailed" selected>Detailed — happy + error paths</option>
+                    <option value="exhaustive">Exhaustive — all edge cases</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="max-flows">Max flowcharts</label>
+                  <select id="max-flows" style="font-family:'Inter',sans-serif;font-size:var(--text-md);color:var(--content-base);background:var(--surface-foreground);border:1px solid var(--border-neutral-med);border-radius:var(--radius-sm);padding:var(--sp-sm) var(--sp-md);width:100%;outline:none;">
+                    <option value="3">3 flows</option>
+                    <option value="5" selected>5 flows</option>
+                    <option value="8">8 flows</option>
+                    <option value="12">12 flows</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div class="generate-bar">
+        <span class="generate-bar-hint" id="generate-hint">Paste a PRD above, then click Generate to create flowcharts.</span>
+        <button class="btn btn-ghost btn-sm" onclick="clearAll()"><i class="ph ph-trash"></i> Clear</button>
+        <button class="btn btn-primary btn-lg" id="generate-btn" onclick="generate()">
+          <i class="ph ph-sparkle"></i> Generate Flowcharts
+        </button>
+      </div>
+    </div>
+
+    <!-- ── FLOWS PANEL ── -->
+    <div class="panel" id="panel-flows">
+      <div class="flows-panel" id="flows-panel">
+        <div class="flows-empty" id="flows-empty">
+          <i class="ph ph-flow-arrow"></i>
+          <div>
+            <div class="flows-empty-title">No flowcharts yet</div>
+            <div class="flows-empty-subtitle">Go to PRD Input, paste your document and click Generate.</div>
+          </div>
+          <button class="btn btn-primary" onclick="switchPanel('input', document.querySelector('[data-panel=input]'))">
+            <i class="ph ph-arrow-left"></i> Back to PRD Input
+          </button>
+        </div>
+        <div id="flows-list" style="display:none;display:flex;flex-direction:column;gap:var(--sp-lg);"></div>
+      </div>
+    </div>
+
+    <!-- ── SUMMARY PANEL ── -->
+    <div class="panel" id="panel-summary">
+      <div class="summary-panel">
+        <div class="summary-panel-inner" id="summary-inner">
+          <div class="summary-empty">
+            <i class="ph ph-list-bullets" style="font-size:40px;opacity:.3;display:block;margin-bottom:var(--sp-md);"></i>
+            Generate flowcharts first — the PRD summary will appear here.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dagre@0.8.5/dist/dagre.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.5.0/cytoscape-dagre.js"></script>
+
+<script>
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let _generatedFlows = [];
+let _cyInstances = []; // {cy, dotRaf, dotLoopId}
+
+// ── PANEL SWITCH ──────────────────────────────────────────────────────────────
+function switchPanel(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+// ── CHAR COUNTER ──────────────────────────────────────────────────────────────
+document.getElementById('prd-text').addEventListener('input', function() {
+  document.getElementById('char-count').textContent = this.value.length.toLocaleString();
+});
+
+// ── FLOW COUNT BADGE ─────────────────────────────────────────────────────────
+function updateFlowBadge(n) {
+  document.getElementById('flow-count-badge').textContent = n;
+}
+
+
+// ── STATUS BAR ────────────────────────────────────────────────────────────────
+function setStatus(text, loading = true, error = false) {
+  const bar = document.getElementById('status-bar');
+  const spinner = document.getElementById('status-spinner');
+  bar.classList.remove('hidden', 'error');
+  if (error) bar.classList.add('error');
+  spinner.classList.toggle('error', error);
+  document.getElementById('status-text').textContent = text;
+}
+function clearStatus() { document.getElementById('status-bar').classList.add('hidden'); }
+
+// ── CLEAR ─────────────────────────────────────────────────────────────────────
+function clearAll() {
+  document.getElementById('prd-title').value = '';
+  document.getElementById('prd-text').value = '';
+  document.getElementById('char-count').textContent = '0';
+  clearFlows();
+  clearSummary();
+  clearStatus();
+}
+function clearFlows() {
+  _cyInstances.forEach(inst => { try { if (inst.dotRaf) cancelAnimationFrame(inst.dotRaf); inst.cy.destroy(); } catch(e){} });
+  _cyInstances = [];
+  _generatedFlows = [];
+  document.getElementById('flows-list').innerHTML = '';
+  document.getElementById('flows-list').style.display = 'none';
+  document.getElementById('flows-empty').style.display = '';
+  updateFlowBadge(0);
+}
+function clearSummary() {
+  document.getElementById('summary-inner').innerHTML = '<div class="summary-empty"><i class="ph ph-list-bullets" style="font-size:40px;opacity:.3;display:block;margin-bottom:var(--sp-md);"></i>Generate flowcharts first — the PRD summary will appear here.</div>';
+}
+
+// ── EXAMPLES ─────────────────────────────────────────────────────────────────
+const EXAMPLES = {
+  newsstand: {
+    title: 'Factiva – Newsstand Migration & Enhancement v1.4',
+    text: `## Executive Summary
+The Newsstand is the heartbeat of the classic Factiva Homepage, accounting for 29.8k monthly avg clicks (70% of all Homepage module interactions). Classic Factiva has ~2,400 monthly active users (MAU) interacting with homepage modules (3% of total MAU), of which 94% (~2,256 MAU) specifically use the Newsstand. While homepage discoverability is a major bottleneck, the Newsstand itself is a high-utility feature.
+
+The new Factiva experience is missing two critical components:
+1. Reader license holders cannot access any Homepage tab apart from "Trending News", preventing them from accessing "My Saved Sources" and therefore unable to browse the publication ecosystem.
+2. The option to browse articles beyond the 14-day cap (up to 6 months) is not present for any license type.
+
+Primary user need: enable a deeper and faster user journey for browsing Newsstand publications.
+
+## Core User Problems & Key Feedback
+- **5-headline & 14-day historical cap**: Current "My Saved Sources" module restricted to 14-day snapshot with 5 headlines per subsection. Users need frictionless environment to jump from headline scan to 6-month historical lookback without dead ends.
+- **Visibility & hidden navigation**: Users prefer clicking highly visible, prominently exposed modules. Design must surface Newsstand capabilities without burying behind passive UI components.
+- **Anticipated client churn and Sales risk**: Internal Sales teams flagged potential churn at Reader tier levels who rely heavily on browsing articles.
+
+## User Needs by License Tier
+- **Reader tier**: Newsstand is second most sought-after Factiva feature for this user class. They rely on admins to push content; the Homepage Newsstand tab becomes primary driver for overall platform retention, allowing them to scan daily business sections and stay informed without needing complex search skills.
+- **Professional tier**: These users monitor or research specific market trends/topics leveraging full access to the complete Factiva ecosystem, including simple and complex search queries or specialized C&M modules. They use Newsstand to supplement broader intelligence workflows.
+- **Analyst tier**: They focus on tracking industry trends and regulatory movements. Need frictionless environment to jump from headline scan directly into a 6-month historical lookback, hunting for macro-economic correlations across specialized trade journals.
+
+## Functional Requirements (Phase 1 – Oct '26 MVP)
+- Unified Search and Discovery
+- Multi-dimensional Filtering (Region, Language, Industrial Classification)
+- Six-month deep archive navigation (maximum threshold allowed by the system)
+- Native and non-native subsection browsing
+- Individual and Bulk article utilities and actions
+
+## Full-Scale Newsstand Ecosystem (v2.0 – post Oct '26)
+
+### 1. Discovery Dashboard
+Frictionless control center to search, filter and isolate a target publication from 200 curated Newsstand sources. Three personalized launch zones:
+- **Source Discovery Filters**: Autocomplete search bar querying publication names, publishers or localized keywords; geographic scope filter (Country/Region); language filter; industrial classification dropdown.
+- **[Nice to Have] Quick Launch Favorites**: Customizable panel where users can pin/save preferred go-to publications for immediate one-click activation.
+- **[Nice to Have] Recently Browsed**: Rolling chronological history strip showing last 5 publications explored.
+
+### 2. Focused Source Workstation
+Context-aware layout to populate browse publication-specific calendars, native subsections or non-native filters, display modes, sorting options, individual article utilities and bulk operations.
+
+#### 2.1 Native-taxonomy publications (e.g. WSJ, CNN Wire):
+- **Calendar picker**: Maps against publication's operational printing schedule up to 6 months back.
+- **Subsection picker**: Localized dropdown dynamically pulling only the structural subsections native to that exact publication's taxonomy.
+- **Optional Deep-Dive filters**: Users can insert free-text keywords (companies, regions, executive names) to isolate targeted coverage.
+- **Individual and Bulk article utilities**: Sticky toolbar with Display Options dropdown, Sorting matrix and Tools (Select all, View all, Download as .rtf/.pdf, Email, Add to Workspace, Add to Newsletter). Individual article view: DJIDs accordion, Listen to the Article (TTS), Translate Article (Google), Link sharing.
+
+#### 2.2 Non-native publications (e.g. Reuters News):
+- Filters picker: Replaces Subsection Picker with Companies, Industries, Regions and Subjects metadata filters.
+- Browse results up to maximum 6-month historical lookback threshold, using pagination.
+
+## Proposed User Journey (All Entitlements, Reader Tier included)
+User need: "I want to see everything published in The WSJ Business & Finance section, on March 15th 2026, and save it as a PDF."
+
+1. **System Baseline**: User lands on primary dashboard interface.
+2. **Back-end Validation**: Search, autocomplete, and category filtering queries must extract data strictly and exclusively from the whitelisted catalog of 200 Newsstand-eligible sources.
+3. **Newsstand Navigation**: System loads Discovery Dashboard with pre-populated discovery launchpad surfacing DJ Top Sources.
+4. **Discovery Dashboard – Publication Selection** (3 paths):
+   - Path A (Smart Search Filter): User types in autocomplete search bar; system executes matching logic against 200 curated sources.
+   - Path B (Catalog Filtering): User narrows list by selecting Region, Language, and Industrial Classification filters.
+   - Path C (Quick Shortcuts – Nice to Have): User clicks The Wall Street Journal from pinned Quick Launch Favorites or Recently Browsed strip.
+5. **Workstation Transition**: User clicks on The Wall Street Journal. Discovery Dashboard collapses; main canvas expands into Focused Source Workstation.
+6. **Context-aware Criteria Selection**:
+   - Temporal target: Calendar Picker → selects March 15, 2026.
+   - Taxonomy target: Subsection Picker → selects Business & Finance.
+   - Optional precision refinement: Free-text Keywords filter.
+7. **Data Rendering & Layout Selection**: System queries Factiva search index, processes constraints asynchronously, populates results grid (10 items/page). User adjusts visualization via "Display Options" dropdown (Full Article / Keywords in Context / Full Article+Indexing / Headline+Lead Paragraph / Customizable).
+8. **Bulk Export Execution**: User scrolls to sticky results toolbar, clicks "Select All", triggers "Download as .pdf". System aggregates selected documents into a clean continuous-scroll PDF brief.
+
+## MVP (Oct '26 Delivery) – Functional Requirements
+
+### Universal Module Provisioning (Prerequisite)
+The existing "My Saved Sources" module must be natively provisioned across all global license types, explicitly including the baseline Reader tier.
+
+### Dual-List Lookup Capabilities
+Within the unified "My Saved Sources" workspace framework, the platform must support two clear, separate discovery vectors:
+- **Standard Saved Sources**: The user's personalized, intent-driven collection.
+- **Newsstand Sources**: A dedicated, clean lookup containing the ~200 curated, high-value global publications.
+
+### Temporal Browsing Scope
+- **Short-Span view [MUST-HAVE]**: 14-day historical window, max 5 headlines per day/subsection. Acts as baseline for feature parity and fast migration.
+- **Long-Span view [NICE-TO-HAVE]**: Expanded deep-archive timeline allowing user to seamlessly look back up to 6 months without dead ends.
+
+### View Source Page
+Beyond listing 5 headlines, the module must expose access to the deep-linked "View Source Page" for any selected publication. This profile sub-module serves as a descriptive index for the source publication and must surface its associated pre-defined taxonomy metadata content filters: Companies, Industries, Regions and Subjects (4 interactive pie charts containing 5 sections each, with each section surfacing up to 5 headlines).
+
+## MVP User Journey: The Daily Editorial Scan
+1. **Entry & Orientation**: Reader logs into new Factiva. They immediately locate the expanded "My Saved Sources" module on their dashboard, near the Trending News tab.
+2. **Context Switching**: With the intent to browse premium editorial print layouts, the user shifts the "My Saved Sources" module focus to explore Newsstand Sources.
+3. **Source Discovery**: User performs a rapid search or filters down the list of 200+ global publications to select their preferred daily newspaper (e.g. The Wall Street Journal).
+4. **Headline Review (short-span)**: System surfaces the current day's structural subsections. User quickly scans the top 5 headlines under the "Business & Finance" section, covering the 14-day window.
+5. **Seamless Progression (long-span)**: If the user needs to validate an older trend, the interface allows them to transition smoothly into the Long-Span View, letting them query up to 6 months of historical publication coverage.
+6. **Source Profile Page**: User wants to read more than the initial 5 headlines. They click "View Source Page". The workspace transitions to a profile displaying the publication's description alongside its indexed filters (Companies, Industries, Regions, Subjects), providing immediate orientation. User interacts with 4 pie charts. Clicking a slice updates the headline list below.
+
+## User Stories
+
+### 1. Primary Navigation & Discovery
+As a User (including Reader tier licensees), I want to easily access a **visible** Newsstand hub and use intuitive search, filter, and potentially quick-launch tokens, so that I can instantly isolate my target publication from the 200 designated sources without needing complex source-level permissions.
+- A "Newsstand" hub must be universally and highly visible (Reader tier accounts must be whitelisted).
+- Smart search input bar with autocomplete against publication names, publishers, and localized keywords.
+- Multi-Dimensional Filtering Ribbon: Geographic scope, Language, Industrial Classification.
+- [Nice to Have] Quick Launch Favorites and Recently Browsed.
+
+### 2. Historical Archive Retrieval
+As a User, I want to select dates from an extended rolling historical archive via a publication-aware calendar interface, so that I can conduct deep retrospective research up to 6 months back while respecting the source's native publication schedule.
+- Calendar Picker supporting index-driven rolling historical lookback of 6 months.
+- Calendar Logic must dynamically adapt to the active publication's printing frequency.
+
+### 3. Granular Section Browsing
+As a User, I want to filter content using a dynamic section menu configured to the active publication's unique layout, so that I can mirror the experience of browsing a physical print edition.
+- Subsection Picker drop-down dynamically fetching only the operational schemas native to that specific publication's taxonomy.
+- State upon loading any publication workspace must automatically default to "Today" and "Front Page".
+
+### 4. Browsing Non-Sectioned Publications
+As a User, I want to filter wire publications that lack a native metadata taxonomy by using alternative tags (Companies, Industries, Regions, Subjects).
+- Upon loading a non-sectioned publication, standard sub-section and calendar dropdowns are replaced by 4 searchable metadata fields.
+- Ten results load per page; user clicks "Next page" to scan publication history up to 6-month threshold.
+
+### 5. High-Density Layout & Pagination
+As a User, I want to review headlines on a paginated grid container, so that I can scan complete daily editions instead of being restricted to legacy 5-headline summaries.
+- Results pane must display all articles matching chosen date, subsection and precision criteria within 6-month indexing boundary.
+- Pagination defaults to 10 headlines per page.
+- Advancing pages must perform asynchronous partial reload; contextual filtering toolbar remains sticky and preserves active parameters.
+
+### 6. Contextual Precision Refinement
+As a User, I want the option to apply secondary, non-mandatory metadata filters within my active publication workstation.
+- Adjustable secondary ribbon housing optional Precision Filters for Company Name, Region and free-text keywords.
+- All filter nodes must be additive to the core query parameters.
+
+### 7. Custom Visualization & Layout
+As a User, I want to switch between standard system viewing modes or select custom metadata points from a checkbox checklist.
+- "Display Options" dropdown with four one-click layout Default Modes (Full Text, Keywords in Context, Full Text plus Indexing, Headline/Lead Paragraph plus Indexing).
+- Ad-Hoc Layout Engine: "Create Custom Display" action button triggering inline multi-select checklist modal exposing up to 31 distinct metadata parameter tokens.
+
+### 8. Bulk Selection & Export Workflows
+As a User, I want to execute multi-select actions and continuous-scroll compilation exports across my filtered headline entries.
+- Sticky operation toolbar must feature a "Select All" macro-checkbox.
+- Action toolbar must support: Download PDF/RTF, Email, Print, direct push to Newsletter Builder/Modular Workspaces.
+
+### 9. Inline Article Audio Consumption (Audio Player Engine)
+As a User, I want to activate an inline Text-to-Speech (TTS) utility directly from an expanded article display.
+- "Listen" icon/button anchored alongside inline article utilities bar.
+- Audio streaming service must convert article body text string into audio, respecting the language of the article.
+- Playback UI controls: Play, Pause, 10-second Skip Forward/Backward, Volume Slider, Playback Speed Selector (0.25x–2.0x), Close button.
+- Real-time visual progress counter (elapsed time / total duration).
+
+### 10. On-Demand Article Translation (Google Translate Engine)
+As a User, I want to translate the full text of an active article into my native language via a localized dropdown selector.
+- "Translate" dropdown must be accessible in the inline article toolbar workspace.
+- Selecting a language asynchronously passes article text to Google Translate service and instantly re-renders translated text within container canvas, maintaining original paragraph structural layout.
+
+### 11. URL Sharing
+As a User, I want to generate and copy an authenticated deeplink URL so that I can share it with other Factiva subscribers.
+- "Share URL" button within inline article command array.
+- Generates a popup with a secure, tokenized URL.
+
+### 12. Newsstand Tagging for Analytics
+As a Product Manager, I need all actionable components across the Newsstand ecosystem to be fully instrumented with analytics tags.
+- System logs: clicks to Newsstand tab, selection choices in dropdown filters, display options, bulk processing actions and inline article utilities.
+- Each analytics request includes: user license tier, interaction zone, event type, selected publication code, selected subsection taxonomy, custom display attribute.
+
+## Success Metrics
+1. **Platform Engagement & Adoption Rate**: Scale active Newsstand adoption from legacy <3% baseline to >15% of total monthly active accounts, within 180 days post-migration.
+2. **Weekly Return Rate (WRR)**: Establish >40% WRR among active Reader profiles and >10% WRR across all other license tiers, within 180 days of post-migration.
+3. **Interaction Depth**: Average of >3 distinct steps per single Newsstand session (e.g. selecting a publication, picking a calendar date, swapping subsections, tweaking Display Options, saving to .pdf).
+4. **Content Interaction**: Achieve baseline average of >3 content clicks per browsing session, per user, with at least 30% of clicks converting into deep reading actions.
+5. **Downstream workflow conversion**: 25% of original MAU target achieve a cumulative count of unique export-active sessions within 180-day post-migration window.`
+  },
+  collections: {
+    title: 'Factiva – Collections Feature v1.0',
+    text: `## Overview
+Users need to organize saved articles into named Collections within Factiva. This feature enables creating, managing, and sharing curated sets of news articles.
+
+## User Stories
+1. As a user, I can save any article to My Headlines with a single click (bookmark icon on hover).
+2. As a user, I can create a named Collection and add articles to it.
+3. As a user, I can browse all my Collections in a grid view.
+4. As a user, I can share a Collection with my team (Private / Team / Public link).
+5. As a user, I can rename, clone, or delete a Collection.
+6. As a user, I can set the sort order of articles in a Collection (Newest / Oldest / FIFO / LIFO).
+7. As a user, I can enable an RSS feed for any Collection.
+8. As a user, I can remove articles from a Collection individually or in bulk.
+9. As a user, I can view Collections shared with me by others (read-only).
+
+## Acceptance Criteria
+- Collections have a max capacity of 100 articles.
+- Users can have up to 50 Collections.
+- Bulk select must support selecting up to 50 articles at once.
+- All CRUD actions must produce a toast confirmation.
+- Shared-with-me view is read-only; owner info is always visible.
+
+## Edge Cases
+- Article already saved → show "Saved in" popover instead of save modal.
+- Collection limit reached → show error toast, block creation.
+- Article limit reached → show warning in modal.`
+  },
+  alerts: {
+    title: 'Factiva – Smart Alerts v2.0',
+    text: `## Overview
+Users can create automated news alerts based on search queries, companies, or topics. Alerts deliver matching articles via email, in-app notifications, or RSS.
+
+## User Stories
+1. As a user, I can create an alert from any search query.
+2. As a user, I can set alert frequency: real-time, daily digest, or weekly.
+3. As a user, I can choose delivery method: email, in-app, both, or RSS.
+4. As a user, I can pause, edit, or delete an alert.
+5. As a user, I can view all triggered alerts in an activity feed.
+6. As a user, I can save articles from alert results to My Headlines or a Collection.
+
+## Acceptance Criteria
+- Max 20 active alerts per user.
+- Real-time alerts trigger within 5 minutes of article publication.
+- Email digests send at 8am user local time.
+- Alert edit must not reset delivery history.
+
+## Edge Cases
+- Zero results alert → notify user, suggest broadening query.
+- Alert limit reached → block creation, show upgrade path.
+- Duplicate alert detected → warn user before saving.`
+  },
+  onboarding: {
+    title: 'Factiva – New User Onboarding Flow',
+    text: `## Overview
+Guide new users through account setup, topic preferences, and first search to demonstrate core value within the first session.
+
+## User Stories
+1. As a new user, I am greeted with a welcome screen after first login.
+2. As a new user, I can select my industry and topics of interest.
+3. As a new user, I complete a guided first search with tips overlay.
+4. As a new user, I save my first article to see the save flow.
+5. As a new user, I can skip onboarding and return to it later from Help.
+
+## Acceptance Criteria
+- Onboarding completes in ≤4 steps.
+- Topic selection has at least 20 options across 6 industries.
+- Guided search must auto-suggest a query based on selected topics.
+- Progress is saved; user can resume if they navigate away.
+
+## Edge Cases
+- User skips step → mark as skipped, allow resume.
+- User already has saved content → skip save step.
+- SSO user → skip email verification step.`
+  }
+};
+
+function loadExample(key) {
+  const ex = EXAMPLES[key];
+  if (!ex) return;
+  document.getElementById('prd-title').value = ex.title;
+  document.getElementById('prd-text').value = ex.text;
+  document.getElementById('char-count').textContent = ex.text.length.toLocaleString();
+}
+
+// ── GENERATE ──────────────────────────────────────────────────────────────────
+async function generate() {
+  const prdText = document.getElementById('prd-text').value.trim();
+  if (!prdText) {
+    setStatus('Please paste a PRD before generating.', false, true);
+    setTimeout(clearStatus, 3000);
+    return;
+  }
+  const title = document.getElementById('prd-title').value.trim() || 'Untitled PRD';
+  const depth = document.getElementById('flow-depth').value;
+  const maxFlows = parseInt(document.getElementById('max-flows').value);
+
+  const btn = document.getElementById('generate-btn');
+  btn.disabled = true;
+
+  clearFlows();
+  clearSummary();
+  setStatus('Analyzing PRD with Claude…');
+
+  try {
+    const result = await callClaude(prdText, title, depth, maxFlows);
+    renderFlows(result.flows, title);
+    renderSummary(result.summary, title);
+    updateFlowBadge(result.flows.length);
+    clearStatus();
+    // Auto-switch to flows panel
+    switchPanel('flows', document.querySelector('[data-panel=flows]'));
+    document.getElementById('generate-hint').textContent = `${result.flows.length} flowcharts generated from "${title}".`;
+  } catch(e) {
+    setStatus('Error: ' + e.message, false, true);
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ── CALL CLAUDE ───────────────────────────────────────────────────────────────
+async function callClaude(prdText, title, depth, maxFlows) {
+  const depthInstructions = {
+    concise: 'Focus on the primary happy path only. Keep each flow to 4-7 nodes.',
+    detailed: 'Include the primary path and key error/validation paths. 6-12 nodes per flow.',
+    exhaustive: 'Include all edge cases, error states, and alternative paths. Up to 16 nodes per flow.'
+  };
+
+  const systemPrompt = `You are an expert product designer and systems analyst. You analyze PRD documents and produce structured user flow data for visualization with Cytoscape.js.
+
+Return ONLY valid JSON — no markdown, no prose, no code fences.
+
+JSON schema:
+{
+  "flows": [
+    {
+      "id": "string (kebab-case)",
+      "title": "string",
+      "description": "string (one sentence describing the user journey)",
+      "actors": ["User", "System", ...],
+      "nodes": [
+        {
+          "id": "string (short uppercase, e.g. A, B, C1)",
+          "label": "string (max 3 words, use \\n for line breaks)",
+          "type": "user|decision|action|success|error|system",
+          "tip": "string (full description, 1-2 sentences)"
+        }
+      ],
+      "edges": [
+        {
+          "source": "node-id",
+          "target": "node-id",
+          "label": "string (optional, max 3 words)"
+        }
+      ],
+      "path": ["node-id", ...] (the primary happy path, ordered)
+    }
+  ],
+  "summary": {
+    "goals": ["string"],
+    "userStories": ["string"],
+    "edgeCases": ["string"],
+    "actors": ["string"],
+    "keyDecisions": ["string"]
+  }
+}
+
+Node type guidelines:
+- "user": The user/actor (orange ellipse)
+- "decision": Decision/branching point (purple diamond)
+- "action": A user or system action (white rectangle)
+- "success": Terminal success state (green rectangle)
+- "error": Error or rejection state (red rectangle)
+- "system": Automated system step (blue rectangle)
+
+Rules:
+- Each flow must have exactly one "user" type node as the first node in the path.
+- Decision nodes must have at least 2 outgoing edges with labels.
+- Labels on edges should describe the condition (e.g. "Yes", "No", "Email", "Cancel").
+- Keep node IDs short and unique within the flow (use flow index prefix if needed, e.g. F1_A, F1_B).
+- Generate ${maxFlows} flows maximum.
+- ${depthInstructions[depth]}`;
+
+  const userPrompt = `PRD Title: ${title}
+
+PRD Content:
+${prdText}
+
+Analyze this PRD and generate the user flowcharts. Return ONLY the JSON.`;
+
+  const res = await fetch('/api/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      system: systemPrompt,
+      prompt: userPrompt,
+      max_tokens: 8000
+    })
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error || `HTTP ${res.status}`);
+  }
+
+  const data = await res.json();
+  const text = data.text.trim();
+
+  // Strip accidental markdown fences
+  const clean = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+  return JSON.parse(clean);
+}
+
+// ── RENDER FLOWS ──────────────────────────────────────────────────────────────
+// Node colors — identical palette to factiva-spaces reference project
+const NODE_COLORS = {
+  user:     { bg:'#E07B26', border:'#b85e18', text:'#fff'     }, // orange — actor/user
+  hub:      { bg:'#fde68a', border:'#d97706', text:'#78350f'  }, // yellow — hub / system automated
+  decision: { bg:'#c4b5fd', border:'#7c3aed', text:'#3b0764'  }, // purple — decision diamond
+  success:  { bg:'#86efac', border:'#16a34a', text:'#14532d'  }, // green — terminal success
+  error:    { bg:'#fca5a5', border:'#dc2626', text:'#7f1d1d'  }, // red — error / rejection
+  system:   { bg:'#fde68a', border:'#d97706', text:'#78350f'  }, // yellow — automated step (same as hub)
+  action:   { bg:'#ffffff', border:'#9ca3af', text:'#1a222b'  }, // white — regular action
+  default:  { bg:'#ffffff', border:'#9ca3af', text:'#1a222b'  }, // white — fallback
+};
+
+function renderFlows(flows, title) {
+  const list = document.getElementById('flows-list');
+  const empty = document.getElementById('flows-empty');
+  list.innerHTML = '';
+  _cyInstances.forEach(inst => { try { if (inst.dotRaf) cancelAnimationFrame(inst.dotRaf); inst.cy.destroy(); } catch(e){} });
+  _cyInstances = [];
+
+  flows.forEach((flow, idx) => {
+    const card = document.createElement('div');
+    card.className = 'flow-card';
+    card.id = 'flow-card-' + idx;
+
+    // Header
+    const actorsHtml = (flow.actors || []).map(a =>
+      `<span class="actor-chip"><i class="ph ph-user"></i>${a}</span>`
+    ).join('');
+
+    card.innerHTML = `
+      <div class="flow-card-header">
+        <div class="flow-card-index">${idx + 1}</div>
+        <div class="flow-card-meta">
+          <div class="flow-card-title">${flow.title}</div>
+          <div class="flow-card-desc">${flow.description || ''}</div>
+          ${actorsHtml ? `<div class="flow-card-actors">${actorsHtml}</div>` : ''}
+        </div>
+      </div>
+      <div class="cy-container" id="cy-${idx}" style="position:relative;"></div>
+      <div class="legend-row">
+        <span class="legend-item"><span class="legend-dot" style="background:#E07B26;border-radius:50%;border:1.5px solid #b85e18;"></span>Actor</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#c4b5fd;transform:rotate(45deg);border:1.5px solid #7c3aed;"></span>Decision</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#86efac;border:1.5px solid #16a34a;"></span>Success</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#fca5a5;border:1.5px solid #dc2626;"></span>Error</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#fde68a;border:1.5px solid #d97706;"></span>System</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#fff;border:1.5px solid #9ca3af;"></span>Action</span>
+      </div>
+      <div class="flow-desc-bar" id="flow-desc-${idx}">
+        <i class="ph ph-info"></i>
+        <span>Hover a node to see details.</span>
+      </div>
+    `;
+
+    list.appendChild(card);
+    _generatedFlows.push(flow);
+
+    // Init Cytoscape after DOM paint
+    requestAnimationFrame(() => initFlowCy(flow, idx));
+  });
+
+  empty.style.display = 'none';
+  list.style.display = 'flex';
+  list.style.flexDirection = 'column';
+  list.style.gap = 'var(--sp-lg)';
+}
+
+function initFlowCy(flow, idx) {
+  const container = document.getElementById('cy-' + idx);
+  if (!container) return;
+
+  const nodes = (flow.nodes || []).map(n => {
+    const c = NODE_COLORS[n.type] || NODE_COLORS.default;
+    return { data: { id: n.id, label: n.label, type: n.type, tip: n.tip || n.label, bg: c.bg, border: c.border, text: c.text } };
+  });
+
+  const edges = (flow.edges || []).map((e, i) => ({
+    data: { id: `e-${idx}-${i}-${e.source}-${e.target}`, source: e.source, target: e.target, label: e.label || '' }
+  }));
+
+  const cy = cytoscape({
+    container,
+    elements: { nodes, edges },
+    layout: {
+      name: 'dagre',
+      rankDir: 'LR',
+      nodeSep: 44,
+      rankSep: 80,
+      edgeSep: 10,
+      animate: false
+    },
+    style: [
+      // ── Reference project styles (factiva-spaces) ──
+      {
+        selector: 'node',
+        style: {
+          label: 'data(label)', 'text-valign': 'center', 'text-halign': 'center',
+          'font-family': 'Inter,sans-serif', 'font-size': '10px', 'font-weight': '500',
+          'text-wrap': 'wrap', 'text-max-width': '90px', 'line-height': 1.3,
+          width: 92, height: 40,
+          shape: 'round-rectangle', 'corner-radius': 6,
+          'background-color': 'data(bg)',
+          'border-color': 'data(border)',
+          'border-width': 1.5,
+          color: 'data(text)',
+        }
+      },
+      { selector: 'node[type="decision"]', style: { shape: 'diamond', width: 72, height: 72, 'font-size': '9px', 'text-max-width': '60px' } },
+      { selector: 'node[type="user"]',     style: { shape: 'ellipse', width: 64, height: 40, 'font-weight': '700' } },
+      {
+        selector: 'edge',
+        style: {
+          'curve-style': 'round-taxi',
+          'taxi-direction': 'rightward',
+          'taxi-turn': '50%',
+          'corner-rounding-radius': 24,
+          'target-arrow-shape': 'triangle',
+          'target-arrow-color': '#9ca3af',
+          'line-color': '#d1d5db',
+          width: 1.5,
+          'arrow-scale': 0.85,
+          label: 'data(label)',
+          'font-size': '9px',
+          'font-family': 'Inter,sans-serif',
+          color: '#6b7280',
+          'text-background-color': '#fafbfc',
+          'text-background-opacity': 1,
+          'text-background-padding': '2px',
+          'text-rotation': 'none',
+        }
+      },
+      { selector: 'node.flow-active', style: { 'border-color': '#6b7280', 'border-width': 2, 'z-index': 10 } },
+      { selector: 'edge.flow-active', style: { 'line-color': '#9ca3af', 'target-arrow-color': '#9ca3af', width: 2 } },
+      { selector: 'node.flow-dim, edge.flow-dim', style: { opacity: 0.25 } },
+    ],
+    userZoomingEnabled: true,
+    userPanningEnabled: true,
+    boxSelectionEnabled: false,
+  });
+
+  // ── Tooltip — exact replica of factiva-spaces tooltip behaviour ──────────────
+  const tip = document.createElement('div');
+  tip.style.cssText = [
+    'position:absolute',
+    'pointer-events:none',
+    'z-index:100',
+    'background:#111827',
+    'border:none',
+    'border-radius:6px',
+    'padding:6px 10px',
+    'font-size:12px',
+    'font-family:Inter,sans-serif',
+    'font-weight:500',
+    'color:#f9fafb',
+    'line-height:1.4',
+    'box-shadow:0 4px 12px rgba(0,0,0,.25)',
+    'max-width:280px',
+    'white-space:pre-wrap',
+    'opacity:0',
+    'transition:opacity .12s',
+  ].join(';');
+  container.appendChild(tip);
+
+  function showTip(text, renderedPos) {
+    if (!text) return;
+    const parts = text.split('\n');
+    const title = parts[0];
+    const desc  = parts.slice(1).join('\n');
+    if (desc) {
+      tip.innerHTML = `<strong style="display:block;margin-bottom:4px;font-size:12px;">${title}</strong><span style="font-size:11px;opacity:.85;font-weight:400;">${desc}</span>`;
+    } else {
+      tip.innerHTML = `<strong style="font-size:12px;">${title}</strong>`;
+    }
+    tip.style.opacity = '1';
+    const cw = container.offsetWidth, ch = container.offsetHeight;
+    const tw = tip.offsetWidth || 160, th = tip.offsetHeight || 40;
+    let x = renderedPos.x + 12;
+    let y = renderedPos.y - th - 10;
+    if (x + tw > cw - 4) x = renderedPos.x - tw - 12;
+    if (y < 4) y = renderedPos.y + 18;
+    tip.style.left = x + 'px';
+    tip.style.top  = y + 'px';
+    // Update desc bar
+    const descBar = document.getElementById('flow-desc-' + idx);
+    if (descBar) descBar.querySelector('span').textContent = title + (desc ? ' — ' + desc : '');
+  }
+  function hideTip() { tip.style.opacity = '0'; }
+
+  cy.on('mouseover', 'node', function(e) {
+    if (!e.target.hasClass('flow-active')) return;
+    const lbl   = e.target.data('label').replace(/\n/g,' ');
+    const tipTxt = e.target.data('tip') || '';
+    showTip(lbl + (tipTxt && tipTxt !== lbl ? '\n' + tipTxt : ''), e.target.renderedPosition());
+  });
+  cy.on('mouseover', 'edge', function(e) {
+    if (!e.target.hasClass('flow-active')) return;
+    const lbl = e.target.data('label');
+    if (!lbl) return;
+    const mp = e.target.renderedMidpoint ? e.target.renderedMidpoint() : e.renderedPosition;
+    showTip(lbl, mp);
+  });
+  cy.on('mouseout', 'node edge', hideTip);
+  cy.on('mousedown', 'node edge', hideTip);
+  container.addEventListener('mouseleave', hideTip);
+  container.addEventListener('mousemove', function(e) {
+    if (!cy) return;
+    const rect = container.getBoundingClientRect();
+    const rp = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    const els = cy.elementsAt(rp);
+    if (!els || els.length === 0) hideTip();
+  });
+
+  // Animate primary path
+  const path = flow.path || [];
+  if (path.length > 0) animatePath(cy, path, idx);
+
+  _cyInstances.push({ cy, dotRaf: null, dotLoopId: 0 });
+}
+
+function animatePath(cy, path, idx) {
+  const inst = _cyInstances[_cyInstances.length - 1]; // last pushed
+
+  cy.elements().addClass('flow-dim');
+  path.forEach((nid, i) => {
+    cy.$id(nid).removeClass('flow-dim').addClass('flow-active');
+    if (i < path.length - 1) {
+      cy.edges(`[source="${nid}"][target="${path[i+1]}"]`).removeClass('flow-dim').addClass('flow-active');
+    }
+  });
+
+  const container = document.getElementById('cy-' + idx);
+  if (!container) return;
+  if (getComputedStyle(container).position === 'static') container.style.position = 'relative';
+
+  function buildEdgePath(edge) {
+    const sb = edge.source().renderedBoundingBox({ includeLabels: false });
+    const tb = edge.target().renderedBoundingBox({ includeLabels: false });
+    const sx = sb.x2, sy = (sb.y1 + sb.y2) / 2;
+    const ex = tb.x1, ey = (tb.y1 + tb.y2) / 2;
+    const bx = sx + (ex - sx) * 0.5;
+    let pts = null;
+    try { pts = edge.renderedSegmentPoints(); } catch(e) {}
+    const interior = (pts && pts.length >= 2) ? pts : [{ x: bx, y: sy }, { x: bx, y: ey }];
+    const all = [{ x: sx, y: sy }, ...interior, { x: ex, y: ey }];
+    const R = 20;
+    const parts = [`M ${all[0].x} ${all[0].y}`];
+    for (let i = 1; i < all.length - 1; i++) {
+      const p = all[i-1], c = all[i], n = all[i+1];
+      const d1 = Math.hypot(c.x-p.x, c.y-p.y), d2 = Math.hypot(n.x-c.x, n.y-c.y);
+      if (d1 < 0.5 || d2 < 0.5) continue;
+      const r = Math.min(R, d1/2, d2/2);
+      const t1x = c.x+(p.x-c.x)/d1*r, t1y = c.y+(p.y-c.y)/d1*r;
+      const t2x = c.x+(n.x-c.x)/d2*r, t2y = c.y+(n.y-c.y)/d2*r;
+      parts.push(`L ${t1x} ${t1y}`, `Q ${c.x} ${c.y} ${t2x} ${t2y}`);
+    }
+    parts.push(`L ${all[all.length-1].x} ${all[all.length-1].y}`);
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width','0'); svg.setAttribute('height','0');
+    svg.style.cssText = 'position:absolute;top:-9999px;left:-9999px;opacity:0;';
+    const pe = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    pe.setAttribute('d', parts.join(' '));
+    svg.appendChild(pe);
+    document.body.appendChild(svg);
+    return { pe, svg, len: pe.getTotalLength() };
+  }
+
+  const segs = [];
+  let totalLen = 0;
+  for (let i = 0; i < path.length - 1; i++) {
+    const edge = cy.edges(`[source="${path[i]}"][target="${path[i+1]}"]`).first();
+    if (!edge || !edge.length) continue;
+    const { pe, svg, len } = buildEdgePath(edge);
+    if (len > 0) { segs.push({ pe, svg, len, start: totalLen }); totalLen += len; }
+  }
+  if (!segs.length) return;
+
+  function getPoint(dist) {
+    const d = ((dist % totalLen) + totalLen) % totalLen;
+    for (const s of segs) { if (d <= s.start + s.len) return s.pe.getPointAtLength(d - s.start); }
+    return segs[segs.length-1].pe.getPointAtLength(segs[segs.length-1].len);
+  }
+
+  const SPEED = 100, TARGET_GAP = 50;
+  const DOT_COUNT = Math.max(2, Math.round(totalLen / TARGET_GAP));
+  const GAP = totalLen / DOT_COUNT;
+
+  // Collect occlusion zones
+  const nodeBBs = path.map(nid => { try { return cy.$id(nid).renderedBoundingBox({ includeLabels: false }); } catch(e){ return null; } }).filter(Boolean);
+  function isOccluded(x, y) { return nodeBBs.some(b => x>=b.x1 && x<=b.x2 && y>=b.y1 && y<=b.y2); }
+
+  const dots = [];
+  for (let i = 0; i < DOT_COUNT; i++) {
+    const el = document.createElement('div');
+    el.style.cssText = 'position:absolute;width:4px;height:4px;background:#6b7280;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);opacity:0;z-index:5;';
+    container.appendChild(el);
+    dots.push(el);
+  }
+
+  let cursor = 0, lastNow = null;
+  const loopId = ++_cyInstances[_cyInstances.length-1].dotLoopId;
+
+  function frame(now) {
+    if (_cyInstances[idx] && loopId !== _cyInstances[idx].dotLoopId) {
+      segs.forEach(s => { try { s.svg.remove(); } catch(e){} });
+      dots.forEach(d => { try { d.remove(); } catch(e){} });
+      return;
+    }
+    if (!lastNow) lastNow = now;
+    const dt = Math.min(now - lastNow, 50);
+    lastNow = now;
+    cursor = (cursor + SPEED * dt / 1000) % totalLen;
+    for (let i = 0; i < DOT_COUNT; i++) {
+      const d = ((cursor - i * GAP) % totalLen + totalLen) % totalLen;
+      const pt = getPoint(d);
+      dots[i].style.left = pt.x + 'px';
+      dots[i].style.top  = pt.y + 'px';
+      dots[i].style.opacity = isOccluded(pt.x, pt.y) ? '0' : '1';
+    }
+    const raf = requestAnimationFrame(frame);
+    if (_cyInstances[idx]) _cyInstances[idx].dotRaf = raf;
+  }
+  const raf = requestAnimationFrame(frame);
+  if (_cyInstances[idx]) _cyInstances[idx].dotRaf = raf;
+}
+
+// ── RENDER SUMMARY ────────────────────────────────────────────────────────────
+function renderSummary(summary, title) {
+  if (!summary) return;
+  const inner = document.getElementById('summary-inner');
+  const listHtml = (items, icon) => (items || []).map(t =>
+    `<div class="summary-item"><div class="summary-item-bullet"></div><div>${t}</div></div>`
+  ).join('');
+  const tagsHtml = (items) => (items || []).map(t => `<span class="tag">${t}</span>`).join('');
+
+  inner.innerHTML = `
+    <div class="section-card-header" style="margin-bottom:0;padding:var(--sp-xl);background:var(--surface-foreground);border:1px solid var(--border-neutral-low);border-radius:var(--radius-md);">
+      <div>
+        <div class="section-card-title">${title}</div>
+        <div class="section-card-subtitle">Extracted from PRD · ${_generatedFlows.length} flow${_generatedFlows.length === 1 ? '' : 's'} generated</div>
+      </div>
+    </div>
+
+    ${summary.goals?.length ? `
+    <div class="summary-section">
+      <div class="summary-section-title"><i class="ph ph-target"></i> Goals</div>
+      <div class="summary-list">${listHtml(summary.goals)}</div>
+    </div>` : ''}
+
+    ${summary.userStories?.length ? `
+    <div class="summary-section">
+      <div class="summary-section-title"><i class="ph ph-user"></i> User Stories</div>
+      <div class="summary-list">${listHtml(summary.userStories)}</div>
+    </div>` : ''}
+
+    ${summary.keyDecisions?.length ? `
+    <div class="summary-section">
+      <div class="summary-section-title"><i class="ph ph-git-branch"></i> Key Decision Points</div>
+      <div class="summary-list">${listHtml(summary.keyDecisions)}</div>
+    </div>` : ''}
+
+    ${summary.edgeCases?.length ? `
+    <div class="summary-section">
+      <div class="summary-section-title"><i class="ph ph-warning"></i> Edge Cases</div>
+      <div class="summary-list">${listHtml(summary.edgeCases)}</div>
+    </div>` : ''}
+
+    ${summary.actors?.length ? `
+    <div class="summary-section">
+      <div class="summary-section-title"><i class="ph ph-users"></i> Actors</div>
+      <div class="summary-tag-row">${tagsHtml(summary.actors)}</div>
+    </div>` : ''}
+  `;
+}
+
+</script>
+</body>
+</html>
