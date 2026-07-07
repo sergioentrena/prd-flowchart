@@ -7,14 +7,9 @@ const PORT = process.env.PORT || 3456;
 app.use(express.json({ limit: '2mb' }));
 app.use(express.static(__dirname));
 
-// Bedrock client — credentials from env vars
+// Bedrock client — uses default AWS credential chain (env vars or Hatch's IAM role)
 const bedrock = new BedrockRuntimeClient({
-  region: process.env.AWS_REGION || 'us-east-1',
-  credentials: {
-    accessKeyId:     process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    ...(process.env.AWS_SESSION_TOKEN ? { sessionToken: process.env.AWS_SESSION_TOKEN } : {})
-  }
+  region: process.env.AWS_REGION || 'us-east-1'
 });
 
 app.post('/api/generate', async (req, res) => {
@@ -30,7 +25,7 @@ app.post('/api/generate', async (req, res) => {
     };
 
     const cmd = new InvokeModelCommand({
-      modelId: process.env.BEDROCK_MODEL_ID || 'anthropic.claude-sonnet-4-5',
+      modelId: process.env.BEDROCK_MODEL_ID || 'us.anthropic.claude-sonnet-4-5-20251101-v1:0',
       contentType: 'application/json',
       accept: 'application/json',
       body: JSON.stringify(payload)
