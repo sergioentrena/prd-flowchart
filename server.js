@@ -25,7 +25,7 @@ app.post('/api/generate', async (req, res) => {
     };
 
     const cmd = new InvokeModelCommand({
-      modelId: process.env.BEDROCK_MODEL_ID || 'us.anthropic.claude-sonnet-4-5-20251101-v1:0',
+      modelId: process.env.BEDROCK_MODEL_ID || 'us.anthropic.claude-3-5-sonnet-20241022-v2:0',
       contentType: 'application/json',
       accept: 'application/json',
       body: JSON.stringify(payload)
